@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <Extern href="stdidcmd.h"/>
+  <Extern href="vsshlids.h"/>
+  <Extern href="msobtnid.h"/>
+
+  <Commands package="guidStopOnFirstBuildErrorPkg">
+    <Buttons>
+      <Button guid="guidStopOnFirstBuildErrorCmdSet" id="cmdStopBuildOnFirstError" priority="0xFFFF" type="Button">
+        <Parent guid="guidSHLMainMenu" id="IDG_VS_BUILD_SOLUTION" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ToolTipText>Stops the solution build immediately after a project has failed to build.</ToolTipText>
+          <CommandName>cmdStopBuildOnFirstError</CommandName>
+          <ButtonText>Stop Build on first error</ButtonText>
+        </Strings>
+      </Button>
+    </Buttons>
+  </Commands>
+
+  <Symbols>
+    <GuidSymbol name="guidStopOnFirstBuildErrorPkg" value="{5aa4f6e8-fb33-4bbe-9bea-05597fa6b071}" />
+    <GuidSymbol name="guidStopOnFirstBuildErrorCmdSet" value="{fddb8cf9-dce8-40c5-ba7f-8d93936e28f4}">
+      <IDSymbol name="cmdStopBuildOnFirstError" value="0x0100" />
+    </GuidSymbol>
+  </Symbols>
+</CommandTable>
