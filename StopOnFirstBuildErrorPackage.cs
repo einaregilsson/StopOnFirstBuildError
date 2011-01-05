@@ -56,7 +56,6 @@ namespace EinarEgilsson.StopOnFirstBuildError
         IVsMonitorSelection _selectionMonitor;
         uint _selectionEventsCookie;
         uint _solutionHasMultipleProjectsCookie;
-        Guid _solutionWithMultipleProjectsGuid;
         MenuCommand _menuItem;
 
         public bool Enabled { get; set; }
