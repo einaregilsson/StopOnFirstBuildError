@@ -8,6 +8,9 @@
     <Locale>1033</Locale>
     <Icon>Resources\icon.png</Icon>
     <PreviewImage>Resources\preview.png</PreviewImage>
+    <License>Resources\License.txt</License>
+    <MoreInfoUrl>http://tech.einaregilsson.com/2011/01/06/stop-build-on-first-error-in-visual-studio-2010/</MoreInfoUrl>
+    <GettingStartedGuide>http://tech.einaregilsson.com/2011/01/06/stop-build-on-first-error-in-visual-studio-2010/</GettingStartedGuide>
     <InstalledByMsi>false</InstalledByMsi>
     <SupportedProducts>
       <VisualStudio Version="10.0">

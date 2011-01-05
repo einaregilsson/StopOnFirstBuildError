@@ -134,7 +134,9 @@
       <IncludeInVSIX>true</IncludeInVSIX>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Resource Include="Resources\license.txt" />
+    <Content Include="Resources\license.txt">
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <Content Include="Resources\Package.ico" />
     <Content Include="Resources\preview.png">
       <IncludeInVSIX>true</IncludeInVSIX>
