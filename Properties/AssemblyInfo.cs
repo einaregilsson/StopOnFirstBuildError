@@ -23,11 +23,10 @@ $Id$
 using System;
 using System.Reflection;
 using System.Resources;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("StopOnFirstBuildError")]
-[assembly: AssemblyDescription("Visual Studio 2010 extension to stop a solution build as soon as one project has failed to build.")]
+[assembly: AssemblyDescription("Visual Studio 2010 & 2012 extension to stop a solution build as soon as one project has failed to build.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Einar Egilsson")]
 [assembly: AssemblyProduct("StopOnFirstBuildError")]
@@ -37,8 +36,8 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]     
 [assembly: CLSCompliant(false)]
 [assembly: NeutralResourcesLanguage("en-US")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("1.5.0.0")]
+[assembly: AssemblyFileVersion("1.5.0.0")]
 
 
 
