@@ -1,4 +1,5 @@
 ﻿#region License
+
 /* 
 StopOnFirstBuildError Visual Studio Extension
 Copyright (C) 2011 Einar Egilsson
@@ -19,128 +20,146 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 $Id$ 
 */
+
 #endregion
+
 using System;
-using System.IO;
-using System.Diagnostics;
-using System.Globalization;
-using System.Runtime.InteropServices;
 using System.ComponentModel.Design;
-using Microsoft.Win32;
-using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.OLE.Interop;
-using Microsoft.VisualStudio.Shell;
-using EnvDTE80;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
 using EnvDTE;
-using System.Windows.Forms;
+using EnvDTE80;
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 
 namespace EinarEgilsson.StopOnFirstBuildError
 {
-    [PackageRegistration(UseManagedResourcesOnly = true)]
-    [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
-    [ProvideMenuResource("Menus.ctmenu", 1)]
-    [Guid(StopOnFirstBuildErrorPackage.PackageGuid)]
-    [ProvideAutoLoad(UIContextGuids80.SolutionHasMultipleProjects)]
-    public sealed class StopOnFirstBuildErrorPackage : Package, IVsSelectionEvents
-    {
-        const string CancelBuildCommand = "Build.Cancel";
-        const string ViewErrorListCommand = "View.ErrorList";
-        const string PackageGuid = "5aa4f6e8-fb33-4bbe-9bea-05597fa6b071";
-        const string ToggleEnabledCommandGuid = "fddb8cf9-dce8-40c5-ba7f-8d93936e28f4";
-        const string BuildPaneGuid = "{1BD8A850-02D1-11D1-BEE7-00A0C913D1F8}";
-        const uint ToggleEnabledCommandId = 0x100;
+	[PackageRegistration(UseManagedResourcesOnly = true)]
+	[InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
+	[ProvideMenuResource("Menus.ctmenu", 1)]
+	[Guid(PackageGuid)]
+	[ProvideAutoLoad(UIContextGuids80.SolutionHasMultipleProjects)]
+	public sealed class StopOnFirstBuildErrorPackage : Package, IVsSelectionEvents
+	{
+		private const string CancelBuildCommand = "Build.Cancel";
+		private const string ViewErrorListCommand = "View.ErrorList";
+		private const string PackageGuid = "5aa4f6e8-fb33-4bbe-9bea-05597fa6b071";
+		private const string ToggleEnabledCommandGuid = "fddb8cf9-dce8-40c5-ba7f-8d93936e28f4";
+		private const string BuildPaneGuid = "{1BD8A850-02D1-11D1-BEE7-00A0C913D1F8}";
+		private const uint ToggleEnabledCommandId = 0x100;
 
-        DTE2 _dte;
-        BuildEvents _buildEvents;
-        IVsMonitorSelection _selectionMonitor;
-        uint _selectionEventsCookie;
-        uint _solutionHasMultipleProjectsCookie;
-        MenuCommand _menuItem;
+		private BuildEvents _BuildEvents;
+		private DTE2 _DTE;
+		private MenuCommand _MenuItem;
+		private uint _SelectionEventsCookie;
+		private IVsMonitorSelection _SelectionMonitor;
+		private uint _SolutionHasMultipleProjectsCookie;
+		private bool _CanExecute;
 
-        public bool Enabled { get; set; }
-        public bool Active { get; set; }
+		public bool Enabled { get; set; }
+		public bool Active { get; set; }
 
-        protected override void Initialize()
-        {
-            base.Initialize();
-            _dte = (DTE2)GetGlobalService(typeof(DTE));
-            Enabled = true;
-            Active = true;
-            _buildEvents = _dte.Events.BuildEvents;
-            _buildEvents.OnBuildProjConfigDone += OnProjectBuildFinished;
-            _selectionMonitor = (IVsMonitorSelection)GetGlobalService(typeof(SVsShellMonitorSelection));
-            Guid solutionHasMultipleProjects = VSConstants.UICONTEXT.SolutionHasMultipleProjects_guid;
-            _selectionMonitor.GetCmdUIContextCookie(ref solutionHasMultipleProjects, out _solutionHasMultipleProjectsCookie);
-            _selectionMonitor.AdviseSelectionEvents(this, out _selectionEventsCookie);
-            
-            InitializeMenuItem();
-        }
+		#region IVsSelectionEvents Members
 
-        private void InitializeMenuItem()
-        {
-            // Add our command handlers for menu (commands must exist in the .vsct file)
-            OleMenuCommandService mcs = GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
-            if (mcs == null) return;
-            
-            // Create the command for the menu item.
-            _menuItem = new MenuCommand(ToggleEnabled, new CommandID(new Guid(ToggleEnabledCommandGuid), (int)ToggleEnabledCommandId));
-            _menuItem.Checked = Enabled;
-            _menuItem.Visible = true;
-            mcs.AddCommand(_menuItem);
-        }
+		public int OnCmdUIContextChanged(uint dwCmdUICookie, int fActive)
+		{
+			if (_SolutionHasMultipleProjectsCookie == dwCmdUICookie)
+			{
+				_MenuItem.Visible = Active = fActive != 0;
+			}
+			return VSConstants.S_OK;
+		}
 
-        void OnProjectBuildFinished(string project, string projectConfig, string platform, string solutionConfig, bool success)
-        {
-            if (success || !Enabled || !Active) return;
-            _dte.ExecuteCommand(CancelBuildCommand);
+		public int OnElementValueChanged(uint elementid, object varValueOld, object varValueNew)
+		{
+			return VSConstants.S_OK;
+		}
 
-            foreach (OutputWindowPane pane in _dte.ToolWindows.OutputWindow.OutputWindowPanes)
-            {
-                if (pane.Guid == BuildPaneGuid) {
-                    pane.OutputString("StopOnFirstBuildError: Build cancelled because project " + Path.GetFileNameWithoutExtension(project) + " failed to build.\r\n");
-                    break;
-                }
-            }
-            _dte.ExecuteCommand(ViewErrorListCommand);
-        }
+		public int OnSelectionChanged(IVsHierarchy pHierOld, uint itemidOld, IVsMultiItemSelect pMISOld,
+		                              ISelectionContainer pSCOld, IVsHierarchy pHierNew, uint itemidNew,
+		                              IVsMultiItemSelect pMISNew, ISelectionContainer pSCNew)
+		{
+			return VSConstants.S_OK;
+		}
 
-        private void ToggleEnabled(object sender, EventArgs e)
-        {
-            Enabled = _menuItem.Checked = !_menuItem.Checked;
-        }
+		#endregion
 
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _selectionMonitor.UnadviseSelectionEvents(_selectionEventsCookie);
-            }
-            base.Dispose(disposing);
-            
-        }
+		protected override void Initialize()
+		{
+			base.Initialize();
+			_DTE = (DTE2) GetGlobalService(typeof (DTE));
+			Enabled = true;
+			Active = true;
+			_BuildEvents = _DTE.Events.BuildEvents;
 
-        #region IVsSelectionEvents Members
+			//Since Visual Studio 2012 has parallel builds, we only want to cancel the build process once.
+			//This makes no difference for older versions of Visual Studio.
+			_BuildEvents.OnBuildBegin += delegate { _CanExecute = true; };
+			_BuildEvents.OnBuildDone += delegate { _CanExecute = false; };
+			
+			_BuildEvents.OnBuildProjConfigDone += OnProjectBuildFinished;
+			_SelectionMonitor = (IVsMonitorSelection) GetGlobalService(typeof (SVsShellMonitorSelection));
+			
+			var solutionHasMultipleProjects = VSConstants.UICONTEXT.SolutionHasMultipleProjects_guid;
+			
+			_SelectionMonitor.GetCmdUIContextCookie(ref solutionHasMultipleProjects, out _SolutionHasMultipleProjectsCookie);
+			_SelectionMonitor.AdviseSelectionEvents(this, out _SelectionEventsCookie);
 
-        public int OnCmdUIContextChanged(uint dwCmdUICookie, int fActive)
-        {
-            if (_solutionHasMultipleProjectsCookie == dwCmdUICookie)
-            {
-                _menuItem.Visible = Active = fActive != 0;
-            }
-            return VSConstants.S_OK;
-        }
+			InitializeMenuItem();
+		}
 
-        public int OnElementValueChanged(uint elementid, object varValueOld, object varValueNew)
-        {
-            return VSConstants.S_OK;
-        }
+		private void InitializeMenuItem()
+		{
+			// Add our command handlers for menu (commands must exist in the .vsct file)
+			var mcs = GetService(typeof (IMenuCommandService)) as OleMenuCommandService;
+			if (mcs == null) return;
 
-        public int OnSelectionChanged(IVsHierarchy pHierOld, uint itemidOld, IVsMultiItemSelect pMISOld, ISelectionContainer pSCOld, IVsHierarchy pHierNew, uint itemidNew, IVsMultiItemSelect pMISNew, ISelectionContainer pSCNew)
-        {
-            return VSConstants.S_OK;
-        }
+			// Create the command for the menu item.
+			_MenuItem = new MenuCommand(ToggleEnabled, new CommandID(new Guid(ToggleEnabledCommandGuid), (int) ToggleEnabledCommandId))
+			            	{
+								Checked = Enabled, 
+								Visible = true
+							};
+			mcs.AddCommand(_MenuItem);
+		}
 
-        #endregion
-    }
+		private void OnProjectBuildFinished(string project, string projectConfig, string platform, string solutionConfig, bool success)
+		{
+			if (!_CanExecute || success || !Enabled || !Active) return;
+
+            _CanExecute = false;
+			
+			_DTE.ExecuteCommand(CancelBuildCommand);
+
+			var pane = _DTE.ToolWindows.OutputWindow.OutputWindowPanes
+									   .Cast<OutputWindowPane>()
+									   .FirstOrDefault(x => x.Guid == BuildPaneGuid);
+
+			if (pane != null)
+			{
+				var path = Path.GetFileNameWithoutExtension(project);
+				var message = string.Format("StopOnFirstBuildError: Build cancelled because project \"{0}\" failed to build.{1}", path, Environment.NewLine);
+				pane.OutputString(message);
+			}
+
+			_DTE.ExecuteCommand(ViewErrorListCommand);
+		}
+
+		private void ToggleEnabled(object sender, EventArgs e)
+		{
+			Enabled = _MenuItem.Checked = !_MenuItem.Checked;
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				_SelectionMonitor.UnadviseSelectionEvents(_SelectionEventsCookie);
+			}
+
+			base.Dispose(disposing);
+		}
+	}
 }
