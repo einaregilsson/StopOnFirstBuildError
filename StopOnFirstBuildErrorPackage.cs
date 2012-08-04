@@ -1,9 +1,11 @@
 ﻿#region License
-
 /* 
 StopOnFirstBuildError Visual Studio Extension
 Copyright (C) 2011 Einar Egilsson
-http://tech.einaregilsson.com/2011/01/06/stop-build-on-first-error-in-visual-studio-2010/
+
+Contributors: Einar Egilsson, Steven Thuriot
+
+http://einaregilsson.com/stop-build-on-first-error-in-visual-studio-2010/
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -17,10 +19,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-$Id$ 
 */
-
 #endregion
 
 using System;
@@ -50,13 +49,13 @@ namespace EinarEgilsson.StopOnFirstBuildError
 		private const string BuildPaneGuid = "{1BD8A850-02D1-11D1-BEE7-00A0C913D1F8}";
 		private const uint ToggleEnabledCommandId = 0x100;
 
-		private BuildEvents _BuildEvents;
-		private DTE2 _DTE;
-		private MenuCommand _MenuItem;
-		private uint _SelectionEventsCookie;
-		private IVsMonitorSelection _SelectionMonitor;
-		private uint _SolutionHasMultipleProjectsCookie;
-		private bool _CanExecute;
+		private BuildEvents _buildEvents;
+		private DTE2 _dte;
+		private MenuCommand _menuItem;
+		private uint _selectionEventsCookie;
+		private IVsMonitorSelection _selectionMonitor;
+		private uint _solutionHasMultipleProjectsCookie;
+		private bool _canExecute;
 
 		public bool Enabled { get; set; }
 		public bool Active { get; set; }
@@ -65,9 +64,9 @@ namespace EinarEgilsson.StopOnFirstBuildError
 
 		public int OnCmdUIContextChanged(uint dwCmdUICookie, int fActive)
 		{
-			if (_SolutionHasMultipleProjectsCookie == dwCmdUICookie)
+			if (_solutionHasMultipleProjectsCookie == dwCmdUICookie)
 			{
-				_MenuItem.Visible = Active = fActive != 0;
+				_menuItem.Visible = Active = fActive != 0;
 			}
 			return VSConstants.S_OK;
 		}
@@ -89,23 +88,23 @@ namespace EinarEgilsson.StopOnFirstBuildError
 		protected override void Initialize()
 		{
 			base.Initialize();
-			_DTE = (DTE2) GetGlobalService(typeof (DTE));
+			_dte = (DTE2) GetGlobalService(typeof (DTE));
 			Enabled = true;
 			Active = true;
-			_BuildEvents = _DTE.Events.BuildEvents;
+			_buildEvents = _dte.Events.BuildEvents;
 
 			//Since Visual Studio 2012 has parallel builds, we only want to cancel the build process once.
 			//This makes no difference for older versions of Visual Studio.
-			_BuildEvents.OnBuildBegin += delegate { _CanExecute = true; };
-			_BuildEvents.OnBuildDone += delegate { _CanExecute = false; };
+			_buildEvents.OnBuildBegin += delegate { _canExecute = true; };
+			_buildEvents.OnBuildDone += delegate { _canExecute = false; };
 			
-			_BuildEvents.OnBuildProjConfigDone += OnProjectBuildFinished;
-			_SelectionMonitor = (IVsMonitorSelection) GetGlobalService(typeof (SVsShellMonitorSelection));
+			_buildEvents.OnBuildProjConfigDone += OnProjectBuildFinished;
+			_selectionMonitor = (IVsMonitorSelection) GetGlobalService(typeof (SVsShellMonitorSelection));
 			
 			var solutionHasMultipleProjects = VSConstants.UICONTEXT.SolutionHasMultipleProjects_guid;
 			
-			_SelectionMonitor.GetCmdUIContextCookie(ref solutionHasMultipleProjects, out _SolutionHasMultipleProjectsCookie);
-			_SelectionMonitor.AdviseSelectionEvents(this, out _SelectionEventsCookie);
+			_selectionMonitor.GetCmdUIContextCookie(ref solutionHasMultipleProjects, out _solutionHasMultipleProjectsCookie);
+			_selectionMonitor.AdviseSelectionEvents(this, out _selectionEventsCookie);
 
 			InitializeMenuItem();
 		}
@@ -117,23 +116,23 @@ namespace EinarEgilsson.StopOnFirstBuildError
 			if (mcs == null) return;
 
 			// Create the command for the menu item.
-			_MenuItem = new MenuCommand(ToggleEnabled, new CommandID(new Guid(ToggleEnabledCommandGuid), (int) ToggleEnabledCommandId))
+			_menuItem = new MenuCommand(ToggleEnabled, new CommandID(new Guid(ToggleEnabledCommandGuid), (int) ToggleEnabledCommandId))
 			            	{
 								Checked = Enabled, 
 								Visible = true
 							};
-			mcs.AddCommand(_MenuItem);
+			mcs.AddCommand(_menuItem);
 		}
 
 		private void OnProjectBuildFinished(string project, string projectConfig, string platform, string solutionConfig, bool success)
 		{
-			if (!_CanExecute || success || !Enabled || !Active) return;
+			if (!_canExecute || success || !Enabled || !Active) return;
 
-            _CanExecute = false;
+            _canExecute = false;
 			
-			_DTE.ExecuteCommand(CancelBuildCommand);
+			_dte.ExecuteCommand(CancelBuildCommand);
 
-			var pane = _DTE.ToolWindows.OutputWindow.OutputWindowPanes
+			var pane = _dte.ToolWindows.OutputWindow.OutputWindowPanes
 									   .Cast<OutputWindowPane>()
 									   .FirstOrDefault(x => x.Guid == BuildPaneGuid);
 
@@ -144,19 +143,19 @@ namespace EinarEgilsson.StopOnFirstBuildError
 				pane.OutputString(message);
 			}
 
-			_DTE.ExecuteCommand(ViewErrorListCommand);
+			_dte.ExecuteCommand(ViewErrorListCommand);
 		}
 
 		private void ToggleEnabled(object sender, EventArgs e)
 		{
-			Enabled = _MenuItem.Checked = !_MenuItem.Checked;
+			Enabled = _menuItem.Checked = !_menuItem.Checked;
 		}
 
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
 			{
-				_SelectionMonitor.UnadviseSelectionEvents(_SelectionEventsCookie);
+				_selectionMonitor.UnadviseSelectionEvents(_selectionEventsCookie);
 			}
 
 			base.Dispose(disposing);
