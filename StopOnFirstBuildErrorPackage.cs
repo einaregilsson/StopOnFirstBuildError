@@ -40,6 +40,7 @@ namespace EinarEgilsson.StopOnFirstBuildError
 	[ProvideMenuResource("Menus.ctmenu", 1)]
 	[Guid(PackageGuid)]
 	[ProvideAutoLoad(UIContextGuids80.SolutionHasMultipleProjects)]
+	[ProvideOptionPage(typeof(Settings), "Stop On First Build Error", "Settings", 0, 0, true)]
 	public sealed class StopOnFirstBuildErrorPackage : Package, IVsSelectionEvents
 	{
 		private const string CancelBuildCommand = "Build.Cancel";
@@ -49,16 +50,32 @@ namespace EinarEgilsson.StopOnFirstBuildError
 		private const string BuildPaneGuid = "{1BD8A850-02D1-11D1-BEE7-00A0C913D1F8}";
 		private const uint ToggleEnabledCommandId = 0x100;
 
+		private const string ToggleShowErrorListCommandGuid = "817f6603-29ee-44bc-981e-3318336f0df6";
+		private const uint ToggleShowErrorListCommandId = 0x101;
+
 		private BuildEvents _buildEvents;
 		private DTE2 _dte;
 		private MenuCommand _menuItem;
+		private MenuCommand _showErrorListMenuItem;
 		private uint _selectionEventsCookie;
 		private IVsMonitorSelection _selectionMonitor;
 		private uint _solutionHasMultipleProjectsCookie;
 		private bool _canExecute;
+	    private Settings _settings;
 
-		public bool Enabled { get; set; }
-		public bool Active { get; set; }
+	    public bool Active { get; set; }
+
+		public bool Enabled
+		{
+			get { return Settings.Enabled; }
+			set { Settings.Enabled = value; }
+		}
+
+		public bool ShowErrorList
+		{
+			get { return Settings.ShowErrorList; }
+			set { Settings.ShowErrorList = value; }
+		}
 
 		#region IVsSelectionEvents Members
 
@@ -85,11 +102,35 @@ namespace EinarEgilsson.StopOnFirstBuildError
 
 		#endregion
 
+		private Settings Settings
+		{
+			get
+			{
+                if (_settings == null)
+                {
+                    _settings = (Settings) GetDialogPage(typeof (Settings));
+                    _settings.EnabledChanged += (sender, args) =>
+                                                    {
+                                                        if (_menuItem != null)
+                                                            _menuItem.Checked = _settings.Enabled;
+                                                    };
+
+                    _settings.ShowErrorListChanged += (sender, args) =>
+                                                          {
+                                                              if (_showErrorListMenuItem != null)
+                                                                  _showErrorListMenuItem.Checked =
+                                                                      _settings.ShowErrorList;
+                                                          };
+                }
+
+			    return _settings;
+			}
+		}
+
 		protected override void Initialize()
 		{
 			base.Initialize();
 			_dte = (DTE2) GetGlobalService(typeof (DTE));
-			Enabled = true;
 			Active = true;
 			_buildEvents = _dte.Events.BuildEvents;
 
@@ -119,9 +160,17 @@ namespace EinarEgilsson.StopOnFirstBuildError
 			_menuItem = new MenuCommand(ToggleEnabled, new CommandID(new Guid(ToggleEnabledCommandGuid), (int) ToggleEnabledCommandId))
 			            	{
 								Checked = Enabled, 
-								Visible = true
+								Visible = true,
 							};
 			mcs.AddCommand(_menuItem);
+
+			_showErrorListMenuItem = new MenuCommand(ToggleShowErrorList, new CommandID(new Guid(ToggleShowErrorListCommandGuid), (int)ToggleShowErrorListCommandId))
+							{
+								Checked = ShowErrorList,
+								Visible = true
+							};
+
+			 mcs.AddCommand(_showErrorListMenuItem);
 		}
 
 		private void OnProjectBuildFinished(string project, string projectConfig, string platform, string solutionConfig, bool success)
@@ -143,12 +192,18 @@ namespace EinarEgilsson.StopOnFirstBuildError
 				pane.OutputString(message);
 			}
 
-			_dte.ExecuteCommand(ViewErrorListCommand);
+			if (ShowErrorList)
+				_dte.ExecuteCommand(ViewErrorListCommand);
 		}
 
 		private void ToggleEnabled(object sender, EventArgs e)
 		{
 			Enabled = _menuItem.Checked = !_menuItem.Checked;
+		}
+
+		private void ToggleShowErrorList(object sender, EventArgs e)
+		{
+			ShowErrorList = _showErrorListMenuItem.Checked = !_showErrorListMenuItem.Checked;
 		}
 
 		protected override void Dispose(bool disposing)

@@ -16,6 +16,16 @@
           <ButtonText>Stop Build on first error</ButtonText>
         </Strings>
       </Button>
+      <Button guid="guidShowErrorListCmdSet" id="cmdShowErrorList" priority="0xFFFF" type="Button">
+          <Parent guid="guidSHLMainMenu" id="IDG_VS_BUILD_SOLUTION" />
+          <CommandFlag>DefaultInvisible</CommandFlag>
+          <CommandFlag>DynamicVisibility</CommandFlag>
+          <Strings>
+          <ToolTipText>Show the error list after the build is stopped.</ToolTipText>
+          <CommandName>cmdShowErrorList</CommandName>
+          <ButtonText>Show Error list when build is stopped</ButtonText>
+        </Strings>
+      </Button>
     </Buttons>
   </Commands>
 
@@ -24,5 +34,9 @@
     <GuidSymbol name="guidStopOnFirstBuildErrorCmdSet" value="{fddb8cf9-dce8-40c5-ba7f-8d93936e28f4}">
       <IDSymbol name="cmdStopBuildOnFirstError" value="0x0100" />
     </GuidSymbol>
+    <GuidSymbol name="guidShowErrorListCmdSet" value="{817f6603-29ee-44bc-981e-3318336f0df6}">
+      <IDSymbol name="cmdShowErrorList" value="0x0101" />
+    </GuidSymbol>
+
   </Symbols>
 </CommandTable>
