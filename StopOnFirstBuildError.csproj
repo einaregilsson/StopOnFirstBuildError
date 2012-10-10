@@ -109,6 +109,9 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Settings.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="StopOnFirstBuildErrorPackage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -127,6 +130,7 @@
   <ItemGroup>
     <VSCTCompile Include="StopOnFirstBuildError.vsct">
       <ResourceName>Menus.ctmenu</ResourceName>
+      <SubType>Designer</SubType>
     </VSCTCompile>
   </ItemGroup>
   <ItemGroup>

@@ -40,6 +40,7 @@ namespace EinarEgilsson.StopOnFirstBuildError
 	[ProvideMenuResource("Menus.ctmenu", 1)]
 	[Guid(PackageGuid)]
 	[ProvideAutoLoad(UIContextGuids80.SolutionHasMultipleProjects)]
+	[ProvideOptionPage(typeof(Settings), "Stop On First Build Error", "Settings", 0, 0, true)]
 	public sealed class StopOnFirstBuildErrorPackage : Package, IVsSelectionEvents
 	{
 		private const string CancelBuildCommand = "Build.Cancel";
@@ -60,10 +61,21 @@ namespace EinarEgilsson.StopOnFirstBuildError
 		private IVsMonitorSelection _selectionMonitor;
 		private uint _solutionHasMultipleProjectsCookie;
 		private bool _canExecute;
+	    private Settings _settings;
 
-		public bool Enabled { get; set; }
-		public bool Active { get; set; }
-		public bool ShowErrorList { get; set; }
+	    public bool Active { get; set; }
+
+		public bool Enabled
+		{
+			get { return Settings.Enabled; }
+			set { Settings.Enabled = value; }
+		}
+
+		public bool ShowErrorList
+		{
+			get { return Settings.ShowErrorList; }
+			set { Settings.ShowErrorList = value; }
+		}
 
 		#region IVsSelectionEvents Members
 
@@ -90,12 +102,35 @@ namespace EinarEgilsson.StopOnFirstBuildError
 
 		#endregion
 
+		private Settings Settings
+		{
+			get
+			{
+                if (_settings == null)
+                {
+                    _settings = (Settings) GetDialogPage(typeof (Settings));
+                    _settings.EnabledChanged += (sender, args) =>
+                                                    {
+                                                        if (_menuItem != null)
+                                                            _menuItem.Checked = _settings.Enabled;
+                                                    };
+
+                    _settings.ShowErrorListChanged += (sender, args) =>
+                                                          {
+                                                              if (_showErrorListMenuItem != null)
+                                                                  _showErrorListMenuItem.Checked =
+                                                                      _settings.ShowErrorList;
+                                                          };
+                }
+
+			    return _settings;
+			}
+		}
+
 		protected override void Initialize()
 		{
 			base.Initialize();
 			_dte = (DTE2) GetGlobalService(typeof (DTE));
-			Enabled = true;
-			ShowErrorList = true;
 			Active = true;
 			_buildEvents = _dte.Events.BuildEvents;
 
@@ -125,7 +160,7 @@ namespace EinarEgilsson.StopOnFirstBuildError
 			_menuItem = new MenuCommand(ToggleEnabled, new CommandID(new Guid(ToggleEnabledCommandGuid), (int) ToggleEnabledCommandId))
 			            	{
 								Checked = Enabled, 
-								Visible = true
+								Visible = true,
 							};
 			mcs.AddCommand(_menuItem);
 
