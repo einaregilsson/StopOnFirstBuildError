@@ -49,9 +49,13 @@ namespace EinarEgilsson.StopOnFirstBuildError
 		private const string BuildPaneGuid = "{1BD8A850-02D1-11D1-BEE7-00A0C913D1F8}";
 		private const uint ToggleEnabledCommandId = 0x100;
 
+		private const string ToggleShowErrorListCommandGuid = "817f6603-29ee-44bc-981e-3318336f0df6";
+		private const uint ToggleShowErrorListCommandId = 0x101;
+
 		private BuildEvents _buildEvents;
 		private DTE2 _dte;
 		private MenuCommand _menuItem;
+		private MenuCommand _showErrorListMenuItem;
 		private uint _selectionEventsCookie;
 		private IVsMonitorSelection _selectionMonitor;
 		private uint _solutionHasMultipleProjectsCookie;
@@ -59,6 +63,7 @@ namespace EinarEgilsson.StopOnFirstBuildError
 
 		public bool Enabled { get; set; }
 		public bool Active { get; set; }
+		public bool ShowErrorList { get; set; }
 
 		#region IVsSelectionEvents Members
 
@@ -90,6 +95,7 @@ namespace EinarEgilsson.StopOnFirstBuildError
 			base.Initialize();
 			_dte = (DTE2) GetGlobalService(typeof (DTE));
 			Enabled = true;
+			ShowErrorList = true;
 			Active = true;
 			_buildEvents = _dte.Events.BuildEvents;
 
@@ -122,6 +128,14 @@ namespace EinarEgilsson.StopOnFirstBuildError
 								Visible = true
 							};
 			mcs.AddCommand(_menuItem);
+
+			_showErrorListMenuItem = new MenuCommand(ToggleShowErrorList, new CommandID(new Guid(ToggleShowErrorListCommandGuid), (int)ToggleShowErrorListCommandId))
+							{
+								Checked = ShowErrorList,
+								Visible = true
+							};
+
+			 mcs.AddCommand(_showErrorListMenuItem);
 		}
 
 		private void OnProjectBuildFinished(string project, string projectConfig, string platform, string solutionConfig, bool success)
@@ -143,12 +157,18 @@ namespace EinarEgilsson.StopOnFirstBuildError
 				pane.OutputString(message);
 			}
 
-			_dte.ExecuteCommand(ViewErrorListCommand);
+			if (ShowErrorList)
+				_dte.ExecuteCommand(ViewErrorListCommand);
 		}
 
 		private void ToggleEnabled(object sender, EventArgs e)
 		{
 			Enabled = _menuItem.Checked = !_menuItem.Checked;
+		}
+
+		private void ToggleShowErrorList(object sender, EventArgs e)
+		{
+			ShowErrorList = _showErrorListMenuItem.Checked = !_showErrorListMenuItem.Checked;
 		}
 
 		protected override void Dispose(bool disposing)
