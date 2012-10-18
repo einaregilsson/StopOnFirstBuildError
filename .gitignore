@@ -47,3 +47,5 @@ _ReSharper*/
 
 #NuGet
 packages/
+
+*.snk
