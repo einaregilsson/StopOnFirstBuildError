@@ -63,6 +63,8 @@ namespace EinarEgilsson.StopOnFirstBuildError
 		private bool _canExecute;
 	    private Settings _settings;
 
+	    private CommandEvents _buildCancel;
+
 	    public bool Active { get; set; }
 
 		public bool Enabled
@@ -133,6 +135,9 @@ namespace EinarEgilsson.StopOnFirstBuildError
 			_dte = (DTE2) GetGlobalService(typeof (DTE));
 			Active = true;
 			_buildEvents = _dte.Events.BuildEvents;
+            const string VSStd97CmdIDGuid = "{5efc7975-14bc-11cf-9b2b-00aa00573819}";
+            _buildCancel = _dte.Events.get_CommandEvents(VSStd97CmdIDGuid, (int)VSConstants.VSStd97CmdID.CancelBuild);
+            _buildCancel.BeforeExecute += buildCancel_BeforeExecute;
 
 			//Since Visual Studio 2012 has parallel builds, we only want to cancel the build process once.
 			//This makes no difference for older versions of Visual Studio.
@@ -149,6 +154,25 @@ namespace EinarEgilsson.StopOnFirstBuildError
 
 			InitializeMenuItem();
 		}
+
+        private void buildCancel_BeforeExecute(string Guid, int ID, object CustomIn, object CustomOut, ref bool CancelDefault)
+        {
+            if (Active && Enabled)
+            {
+                // Ensure that we only execute Build.Cancel once since executing it multiple times sometimes causes VS 2012
+                // to hang when running a parallel build.
+                if (_canExecute)
+                {
+                    // Let Build.Cancel run this time.
+                    _canExecute = false;
+                }
+                else
+                {
+                    // Build has already been canceled, so don't try to cancel it again.
+                    CancelDefault = true;
+                }
+            }
+        }
 
 		private void InitializeMenuItem()
 		{
