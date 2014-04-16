@@ -201,9 +201,7 @@ namespace EinarEgilsson.StopOnFirstBuildError
 		{
 			if (!_canExecute || success || !Enabled || !Active) return;
 
-            _canExecute = false;
-			
-			_dte.ExecuteCommand(CancelBuildCommand);
+ 			_dte.ExecuteCommand(CancelBuildCommand);
 
 			var pane = _dte.ToolWindows.OutputWindow.OutputWindowPanes
 									   .Cast<OutputWindowPane>()
