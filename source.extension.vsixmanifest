@@ -3,7 +3,7 @@
   <Identifier Id="5aa4f6e8-fb33-4bbe-9bea-05597fa6b071">
     <Name>StopOnFirstBuildError</Name>
     <Author>Einar Egilsson</Author>
-    <Version>1.5</Version>
+    <Version>1.6</Version>
     <Description xml:space="preserve">Stops a solution build immediately after a project has failed to build.</Description>
     <Locale>1033</Locale>
     <MoreInfoUrl>http://einaregilsson.com/stop-build-on-first-error-in-visual-studio-2010/</MoreInfoUrl>
