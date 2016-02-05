@@ -7,7 +7,7 @@ namespace EinarEgilsson.StopOnFirstBuildError
 {
     public class Settings : DialogPage
     {
-        private bool _enabled;
+        private bool _enabled = true;
         private bool _showErrorList;
 
         public event EventHandler EnabledChanged;
