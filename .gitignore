@@ -49,3 +49,6 @@ _ReSharper*/
 packages/
 
 *.snk
+/.vs
+/UpgradeLog.htm
+StopOnFirstBuildError.csproj.user
