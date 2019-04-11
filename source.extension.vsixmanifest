@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
-  <Metadata>
-    <Identity Id="5aa4f6e8-fb33-4bbe-9bea-05597fa6b071" Version="1.8" Language="en-US" Publisher="Einar Egilsson" />
-    <DisplayName>StopOnFirstBuildError</DisplayName>
-    <Description xml:space="preserve">Stops a solution build immediately after a project has failed to build.</Description>
-    <MoreInfo>http://einaregilsson.com/stop-build-on-first-error-in-visual-studio-2010/</MoreInfo>
-    <License>Resources\license.txt</License>
-    <GettingStartedGuide>http://einaregilsson.com/stop-build-on-first-error-in-visual-studio-2010/</GettingStartedGuide>
-    <Icon>Resources\icon.png</Icon>
-    <PreviewImage>Resources\preview.png</PreviewImage>
-  </Metadata>
-  <Installation>
-    <InstallationTarget Version="[14.0,16.0)" Id="Microsoft.VisualStudio.Community" />
-    <InstallationTarget Version="[11.0,16.0)" Id="Microsoft.VisualStudio.Pro" />
-  </Installation>
-  <Dependencies>
-    <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
-    <Dependency d:Source="Installed" Id="Microsoft.VisualStudio.MPF.11.0" DisplayName="Visual Studio MPF 11.0" Version="[11.0,12.0)" />
-  </Dependencies>
-  <Assets>
-    <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
-  </Assets>
-  <Prerequisites>
-    <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[11.0,16.0)" DisplayName="Visual Studio core editor" />
-  </Prerequisites>
+    <Metadata>
+        <Identity Id="5aa4f6e8-fb33-4bbe-9bea-05597fa6b071" Version="2.0" Language="en-US" Publisher="Einar Egilsson" />
+        <DisplayName>StopOnFirstBuildError</DisplayName>
+        <Description xml:space="preserve">Stops a solution build immediately after a project has failed to build.</Description>
+        <MoreInfo>http://einaregilsson.com/stop-build-on-first-error-in-visual-studio-2010/</MoreInfo>
+        <License>Resources\license.txt</License>
+        <GettingStartedGuide>http://einaregilsson.com/stop-build-on-first-error-in-visual-studio-2010/</GettingStartedGuide>
+        <Icon>Resources\icon.png</Icon>
+        <PreviewImage>Resources\preview.png</PreviewImage>
+    </Metadata>
+    <Installation>
+        <InstallationTarget Version="[16.0.28315.86,17.0)" Id="Microsoft.VisualStudio.Community" />
+        <InstallationTarget Version="[16.0.28315.86,17.0)" Id="Microsoft.VisualStudio.Pro" />
+        <InstallationTarget Id="Microsoft.VisualStudio.Enterprise" Version="[16.0.28315.86,17.0)" />
+    </Installation>
+    <Dependencies>
+        <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
+    </Dependencies>
+    <Assets>
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
+    </Assets>
+    <Prerequisites>
+        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[16.0.28315.86,17.0)" DisplayName="Visual Studio core editor" />
+    </Prerequisites>
 </PackageManifest>
