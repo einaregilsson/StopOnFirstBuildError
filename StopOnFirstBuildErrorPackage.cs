@@ -27,6 +27,7 @@ using System.ComponentModel.Design;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio;
@@ -35,13 +36,13 @@ using Microsoft.VisualStudio.Shell.Interop;
 
 namespace EinarEgilsson.StopOnFirstBuildError
 {
-	[PackageRegistration(UseManagedResourcesOnly = true)]
+	[PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
 	[InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
 	[ProvideMenuResource("Menus.ctmenu", 1)]
 	[Guid(PackageGuid)]
-	[ProvideAutoLoad(UIContextGuids80.SolutionHasMultipleProjects)]
+	[ProvideAutoLoad(UIContextGuids80.SolutionHasMultipleProjects, PackageAutoLoadFlags.BackgroundLoad)]
 	[ProvideOptionPage(typeof(Settings), "Stop On First Build Error", "Settings", 0, 0, true)]
-	public sealed class StopOnFirstBuildErrorPackage : Package, IVsSelectionEvents
+	public sealed class StopOnFirstBuildErrorPackage : AsyncPackage, IVsSelectionEvents
 	{
 		private const string CancelBuildCommand = "Build.Cancel";
 		private const string ViewErrorListCommand = "View.ErrorList";
@@ -61,11 +62,11 @@ namespace EinarEgilsson.StopOnFirstBuildError
 		private IVsMonitorSelection _selectionMonitor;
 		private uint _solutionHasMultipleProjectsCookie;
 		private bool _canExecute;
-	    private Settings _settings;
+		private Settings _settings;
 
-	    private CommandEvents _buildCancel;
+		private CommandEvents _buildCancel;
 
-	    public bool Active { get; set; }
+		public bool Active { get; set; }
 
 		public bool Enabled
 		{
@@ -96,8 +97,8 @@ namespace EinarEgilsson.StopOnFirstBuildError
 		}
 
 		public int OnSelectionChanged(IVsHierarchy pHierOld, uint itemidOld, IVsMultiItemSelect pMISOld,
-		                              ISelectionContainer pSCOld, IVsHierarchy pHierNew, uint itemidNew,
-		                              IVsMultiItemSelect pMISNew, ISelectionContainer pSCNew)
+																	ISelectionContainer pSCOld, IVsHierarchy pHierNew, uint itemidNew,
+																	IVsMultiItemSelect pMISNew, ISelectionContainer pSCNew)
 		{
 			return VSConstants.S_OK;
 		}
@@ -108,104 +109,104 @@ namespace EinarEgilsson.StopOnFirstBuildError
 		{
 			get
 			{
-                if (_settings == null)
-                {
-                    _settings = (Settings) GetDialogPage(typeof (Settings));
-                    _settings.EnabledChanged += (sender, args) =>
-                                                    {
-                                                        if (_menuItem != null)
-                                                            _menuItem.Checked = _settings.Enabled;
-                                                    };
+				if (_settings == null)
+				{
+					_settings = (Settings)GetDialogPage(typeof(Settings));
+					_settings.EnabledChanged += (sender, args) =>
+					{
+						if (_menuItem != null)
+							_menuItem.Checked = _settings.Enabled;
+					};
 
-                    _settings.ShowErrorListChanged += (sender, args) =>
-                                                          {
-                                                              if (_showErrorListMenuItem != null)
-                                                                  _showErrorListMenuItem.Checked =
-                                                                      _settings.ShowErrorList;
-                                                          };
-                }
+					_settings.ShowErrorListChanged += (sender, args) =>
+					{
+						if (_showErrorListMenuItem != null)
+							_showErrorListMenuItem.Checked =
+								_settings.ShowErrorList;
+					};
+				}
 
-			    return _settings;
+				return _settings;
 			}
 		}
-
-		protected override void Initialize()
+		protected override async System.Threading.Tasks.Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
 		{
 			base.Initialize();
-			_dte = (DTE2) GetGlobalService(typeof (DTE));
+			_dte = (DTE2)await GetServiceAsync(typeof(EnvDTE.DTE));
 			Active = true;
 			_buildEvents = _dte.Events.BuildEvents;
-            const string VSStd97CmdIDGuid = "{5efc7975-14bc-11cf-9b2b-00aa00573819}";
-            _buildCancel = _dte.Events.get_CommandEvents(VSStd97CmdIDGuid, (int)VSConstants.VSStd97CmdID.CancelBuild);
-            _buildCancel.BeforeExecute += buildCancel_BeforeExecute;
+			const string VSStd97CmdIDGuid = "{5efc7975-14bc-11cf-9b2b-00aa00573819}";
+			_buildCancel = _dte.Events.get_CommandEvents(VSStd97CmdIDGuid, (int)VSConstants.VSStd97CmdID.CancelBuild);
+			_buildCancel.BeforeExecute += buildCancel_BeforeExecute;
 
 			//Since Visual Studio 2012 has parallel builds, we only want to cancel the build process once.
 			//This makes no difference for older versions of Visual Studio.
 			_buildEvents.OnBuildBegin += delegate { _canExecute = true; };
 			_buildEvents.OnBuildDone += delegate { _canExecute = false; };
-			
+
 			_buildEvents.OnBuildProjConfigDone += OnProjectBuildFinished;
-			_selectionMonitor = (IVsMonitorSelection) GetGlobalService(typeof (SVsShellMonitorSelection));
-			
+			_selectionMonitor = (IVsMonitorSelection)GetGlobalService(typeof(SVsShellMonitorSelection));
+
 			var solutionHasMultipleProjects = VSConstants.UICONTEXT.SolutionHasMultipleProjects_guid;
-			
+
 			_selectionMonitor.GetCmdUIContextCookie(ref solutionHasMultipleProjects, out _solutionHasMultipleProjectsCookie);
 			_selectionMonitor.AdviseSelectionEvents(this, out _selectionEventsCookie);
 
 			InitializeMenuItem();
 		}
 
-        private void buildCancel_BeforeExecute(string Guid, int ID, object CustomIn, object CustomOut, ref bool CancelDefault)
-        {
-            if (Active && Enabled)
-            {
-                // Ensure that we only execute Build.Cancel once since executing it multiple times sometimes causes VS 2012
-                // to hang when running a parallel build.
-                if (_canExecute)
-                {
-                    // Let Build.Cancel run this time.
-                    _canExecute = false;
-                }
-                else
-                {
-                    // Build has already been canceled, so don't try to cancel it again.
-                    CancelDefault = true;
-                }
-            }
-        }
+		private void buildCancel_BeforeExecute(string Guid, int ID, object CustomIn, object CustomOut, ref bool CancelDefault)
+		{
+			if (Active && Enabled)
+			{
+				// Ensure that we only execute Build.Cancel once since executing it multiple times sometimes causes VS 2012
+				// to hang when running a parallel build.
+				if (_canExecute)
+				{
+					// Let Build.Cancel run this time.
+					_canExecute = false;
+				}
+				else
+				{
+					// Build has already been canceled, so don't try to cancel it again.
+					CancelDefault = true;
+				}
+			}
+		}
 
 		private void InitializeMenuItem()
 		{
 			// Add our command handlers for menu (commands must exist in the .vsct file)
-			var mcs = GetService(typeof (IMenuCommandService)) as OleMenuCommandService;
+			var mcs = GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
 			if (mcs == null) return;
 
 			// Create the command for the menu item.
-			_menuItem = new MenuCommand(ToggleEnabled, new CommandID(new Guid(ToggleEnabledCommandGuid), (int) ToggleEnabledCommandId))
-			            	{
-								Checked = Enabled, 
-								Visible = true,
-							};
+			_menuItem = new MenuCommand(ToggleEnabled, new CommandID(new Guid(ToggleEnabledCommandGuid), (int)ToggleEnabledCommandId))
+			{
+				Checked = Enabled,
+				Visible = true,
+			};
+
 			mcs.AddCommand(_menuItem);
 
 			_showErrorListMenuItem = new MenuCommand(ToggleShowErrorList, new CommandID(new Guid(ToggleShowErrorListCommandGuid), (int)ToggleShowErrorListCommandId))
-							{
-								Checked = ShowErrorList,
-								Visible = true
-							};
+			{
+				Checked = ShowErrorList,
+				Visible = true
+			};
 
-			 mcs.AddCommand(_showErrorListMenuItem);
+			mcs.AddCommand(_showErrorListMenuItem);
 		}
 
 		private void OnProjectBuildFinished(string project, string projectConfig, string platform, string solutionConfig, bool success)
 		{
 			if (!_canExecute || success || !Enabled || !Active) return;
 
- 			_dte.ExecuteCommand(CancelBuildCommand);
+			_dte.ExecuteCommand(CancelBuildCommand);
 
 			var pane = _dte.ToolWindows.OutputWindow.OutputWindowPanes
-									   .Cast<OutputWindowPane>()
-									   .FirstOrDefault(x => x.Guid == BuildPaneGuid);
+										 .Cast<OutputWindowPane>()
+										 .FirstOrDefault(x => x.Guid == BuildPaneGuid);
 
 			if (pane != null)
 			{
