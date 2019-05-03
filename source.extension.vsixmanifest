@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="5aa4f6e8-fb33-4bbe-9bea-05597fa6b071" Version="2.2" Language="en-US" Publisher="Einar Egilsson" />
+        <Identity Id="5aa4f6e8-fb33-4bbe-9bea-05597fa6b071" Version="2.2.1" Language="en-US" Publisher="Einar Egilsson" />
         <DisplayName>StopOnFirstBuildError</DisplayName>
         <Description xml:space="preserve">Stops a solution build immediately after a project has failed to build.</Description>
         <MoreInfo>http://einaregilsson.com/stop-build-on-first-error-in-visual-studio-2010/</MoreInfo>

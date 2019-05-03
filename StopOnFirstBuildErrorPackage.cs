@@ -28,6 +28,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio;
@@ -131,9 +132,12 @@ namespace EinarEgilsson.StopOnFirstBuildError
 		}
 		protected override async System.Threading.Tasks.Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
 		{
-			base.Initialize();
+            await base.InitializeAsync(cancellationToken, progress);
 			_dte = (DTE2)await GetServiceAsync(typeof(EnvDTE.DTE));
 			Active = true;
+
+            await this.JoinableTaskFactory.SwitchToMainThreadAsync();
+
 			_buildEvents = _dte.Events.BuildEvents;
 			const string VSStd97CmdIDGuid = "{5efc7975-14bc-11cf-9b2b-00aa00573819}";
 			_buildCancel = _dte.Events.get_CommandEvents(VSStd97CmdIDGuid, (int)VSConstants.VSStd97CmdID.CancelBuild);
@@ -153,7 +157,7 @@ namespace EinarEgilsson.StopOnFirstBuildError
 			_selectionMonitor.AdviseSelectionEvents(this, out _selectionEventsCookie);
 
 			InitializeMenuItem();
-		}
+        }
 
 		private void buildCancel_BeforeExecute(string Guid, int ID, object CustomIn, object CustomOut, ref bool CancelDefault)
 		{
@@ -174,10 +178,10 @@ namespace EinarEgilsson.StopOnFirstBuildError
 			}
 		}
 
-		private void InitializeMenuItem()
+		private async void InitializeMenuItem()
 		{
 			// Add our command handlers for menu (commands must exist in the .vsct file)
-			var mcs = GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
+			var mcs = await GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
 			if (mcs == null) return;
 
 			// Create the command for the menu item.
