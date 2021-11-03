@@ -81,7 +81,7 @@ namespace EinarEgilsson.StopOnFirstBuildError
 			set { Settings.ShowErrorList = value; }
 		}
 
-		#region IVsSelectionEvents Members
+#region IVsSelectionEvents Members
 
 		public int OnCmdUIContextChanged(uint dwCmdUICookie, int fActive)
 		{
@@ -104,7 +104,7 @@ namespace EinarEgilsson.StopOnFirstBuildError
 			return VSConstants.S_OK;
 		}
 
-		#endregion
+#endregion
 
 		private Settings Settings
 		{

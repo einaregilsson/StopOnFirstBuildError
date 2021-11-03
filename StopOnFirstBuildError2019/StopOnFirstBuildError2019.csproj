@@ -74,42 +74,12 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Settings.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="StopOnFirstBuildErrorPackage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="VSPackage.resx">
-      <MergeWithCTO>true</MergeWithCTO>
-      <ManifestResourceName>VSPackage</ManifestResourceName>
-    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <VSCTCompile Include="StopOnFirstBuildError.vsct">
-      <ResourceName>Menus.ctmenu</ResourceName>
-      <SubType>Designer</SubType>
-    </VSCTCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Resources\icon.png">
-      <IncludeInVSIX>true</IncludeInVSIX>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\license.txt">
-      <IncludeInVSIX>true</IncludeInVSIX>
-    </Content>
-    <Content Include="Resources\Package.ico" />
-    <Content Include="Resources\preview.png">
-      <IncludeInVSIX>true</IncludeInVSIX>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0">
@@ -147,6 +117,29 @@
       <Version>14.3.26929</Version>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\Shared\Resources\icon.png">
+      <Link>Resources\icon.png</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="..\Shared\Resources\license.txt">
+      <Link>Resources\license.txt</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="..\Shared\Resources\Package.ico">
+      <Link>Resources\Package.ico</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="..\Shared\Resources\preview.png">
+      <Link>Resources\preview.png</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <VSCTCompile Include="StopOnFirstBuildError.vsct">
+      <ResourceName>Menus.ctmenu</ResourceName>
+      <SubType>Designer</SubType>
+    </VSCTCompile>
+  </ItemGroup>
+  <Import Project="..\StopOnFirstBuildErrorShared\StopOnFirstBuildErrorShared.projitems" Label="Shared" />
   <PropertyGroup>
     <UseCodebase>true</UseCodebase>
   </PropertyGroup>
