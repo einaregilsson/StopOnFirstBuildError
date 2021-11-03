@@ -40,14 +40,20 @@ namespace EinarEgilsson.StopOnFirstBuildError
 	[PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
 	[InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
 	[ProvideMenuResource("Menus.ctmenu", 1)]
-	[Guid(PackageGuid)]
+#if VS2019
+	[Guid(PackageGuid2019)]
+#endif
+#if VS2022
+	[Guid(PackageGuid2022)]
+#endif
 	[ProvideAutoLoad(UIContextGuids80.SolutionHasMultipleProjects, PackageAutoLoadFlags.BackgroundLoad)]
 	[ProvideOptionPage(typeof(Settings), "Stop On First Build Error", "Settings", 0, 0, true)]
 	public sealed class StopOnFirstBuildErrorPackage : AsyncPackage, IVsSelectionEvents
 	{
 		private const string CancelBuildCommand = "Build.Cancel";
 		private const string ViewErrorListCommand = "View.ErrorList";
-		private const string PackageGuid = "5aa4f6e8-fb33-4bbe-9bea-05597fa6b071";
+		private const string PackageGuid2019 = "5aa4f6e8-fb33-4bbe-9bea-05597fa6b071";
+		private const string PackageGuid2022 = "8206613f-c505-4d3a-b64a-f83f6511c981";
 		private const string ToggleEnabledCommandGuid = "fddb8cf9-dce8-40c5-ba7f-8d93936e28f4";
 		private const string BuildPaneGuid = "{1BD8A850-02D1-11D1-BEE7-00A0C913D1F8}";
 		private const uint ToggleEnabledCommandId = 0x100;
