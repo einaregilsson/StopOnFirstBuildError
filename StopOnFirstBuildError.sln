@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26228.4
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31729.503
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StopOnFirstBuildError", "StopOnFirstBuildError.csproj", "{E7C943B4-FCCA-4AB5-9E33-FE66AF9EDA58}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StopOnFirstBuildError2019", "StopOnFirstBuildError2019\StopOnFirstBuildError2019.csproj", "{E7C943B4-FCCA-4AB5-9E33-FE66AF9EDA58}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,5 +18,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {787A0659-4B61-410E-95C5-7E1D42673EAF}
 	EndGlobalSection
 EndGlobal
