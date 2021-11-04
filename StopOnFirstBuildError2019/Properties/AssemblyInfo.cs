@@ -2,7 +2,7 @@
 /* 
 StopOnFirstBuildError Visual Studio Extension
 Copyright (C) 2011 Einar Egilsson
-http://tech.einaregilsson.com/2011/01/06/stop-build-on-first-error-in-visual-studio-2010/
+https://einaregilsson.com/stop-build-on-first-error-in-visual-studio-2010/
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
