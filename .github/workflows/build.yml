@@ -24,4 +24,9 @@ jobs:
     - name: Store VS2019 VSIX Build
       uses: actions/upload-artifact@v2
       with:
-        path: StopOnFirstBuildError2019/bin/Release/bin/StopOnFirstBuildError2019.vsix
+        path: StopOnFirstBuildError2019/bin/Release/StopOnFirstBuildError2019.vsix
+
+    - name: Store VS2022 VSIX Build
+      uses: actions/upload-artifact@v2
+      with:
+        path: StopOnFirstBuildError2022/bin/Release/StopOnFirstBuildError2022.vsix
