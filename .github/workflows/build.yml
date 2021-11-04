@@ -1,4 +1,4 @@
-name: CI
+name: Build extension
 
 on:
   push:
@@ -20,3 +20,8 @@ jobs:
       id: build
       run: |
         msbuild /p:configuration=Release /p:DeployExtension=false /p:ZipPackageCompressionLevel=normal /v:m
+
+    - name: Store VS2019 VSIX Build
+      uses: actions/upload-artifact@v2
+      with:
+        path: StopOnFirstBuildError2019/bin/Release/bin/StopOnFirstBuildError2019.vsix
