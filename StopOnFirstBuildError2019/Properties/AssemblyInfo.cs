@@ -26,14 +26,14 @@ using System.Resources;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("StopOnFirstBuildError")]
-[assembly: AssemblyDescription("Visual Studio 2010 & 2012 extension to stop a solution build as soon as one project has failed to build.")]
+[assembly: AssemblyDescription("Visual Studio 2017 & 2019 extension to stop a solution build as soon as one project has failed to build.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Einar Egilsson")]
 [assembly: AssemblyProduct("StopOnFirstBuildError")]
 [assembly: AssemblyCopyright("(C) 2011 Einar Egilsson")]
 [assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]   
-[assembly: ComVisible(false)]     
+[assembly: AssemblyCulture("")]
+[assembly: ComVisible(false)]
 [assembly: CLSCompliant(false)]
 [assembly: NeutralResourcesLanguage("en-US")]
 [assembly: AssemblyVersion("1.7.0.0")]
