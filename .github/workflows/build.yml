@@ -21,10 +21,17 @@ jobs:
       run: |
         msbuild /p:configuration=Release /p:DeployExtension=false /p:ZipPackageCompressionLevel=normal /v:m
 
+    # Doing this in 2 steps instead of having two paths, because I want both .vsix files to be in the root of the zip file
+    # and they won't be if they are uploaded in the same build
+    
     - name: Store VS2019 VSIX Build
       uses: actions/upload-artifact@v2
       with:
         name: builds-for-vs2019-and-vs2022
-        path: |
-          StopOnFirstBuildError2019/bin/Release/StopOnFirstBuildError2019.vsix
-          StopOnFirstBuildError2022/bin/Release/StopOnFirstBuildError2022.vsix
+        path: StopOnFirstBuildError2019/bin/Release/StopOnFirstBuildError2019.vsix
+
+    - name: Store VS2022 VSIX Build
+      uses: actions/upload-artifact@v2
+      with:
+        name: builds-for-vs2019-and-vs2022
+        path: StopOnFirstBuildError2022/bin/Release/StopOnFirstBuildError2022.vsix
